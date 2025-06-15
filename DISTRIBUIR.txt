@@ -1,0 +1,40 @@
+===============================================
+   COMO COMPARTILHAR O OTIMIZADOR
+===============================================
+
+🎯 PARA VOCÊ (CRIADOR):
+
+1. Execute: build_exe.py
+2. Aguarde finalizar
+3. Será criada pasta: WindowsOptimizer_Complete
+4. Compacte esta pasta em ZIP
+5. Compartilhe o arquivo ZIP
+
+===============================================
+
+🎯 PARA OUTROS USUÁRIOS:
+
+1. Baixe o arquivo ZIP
+2. Extraia em qualquer pasta
+3. Execute: run_optimizer.bat
+4. Escolha opção 2 (Como Administrador)
+5. Use o otimizador normalmente
+
+===============================================
+
+📋 VANTAGENS:
+
+✅ Usuário NÃO precisa instalar Python
+✅ Usuário NÃO precisa baixar dependências  
+✅ Funciona em qualquer Windows 10/11
+✅ Executável de ~15MB apenas
+✅ Totalmente offline após download
+
+===============================================
+
+💡 RESUMO:
+- Você: Executa build_exe.py uma vez
+- Outros: Só precisam do ZIP final
+- Simples e prático para todos!
+
+===============================================

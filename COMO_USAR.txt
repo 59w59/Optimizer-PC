@@ -1,0 +1,54 @@
+===============================================
+   WINDOWS PERFORMANCE OPTIMIZER v3.0
+   🚀 COMO USAR - GUIA SIMPLES
+===============================================
+
+📋 O QUE VOCÊ PRECISA:
+- Apenas 1 arquivo: build_exe.py
+- Conexão com internet (para download automático)
+- Windows 10 ou 11
+
+🚀 INSTRUÇÕES PASSO A PASSO:
+
+PASSO 1: BAIXAR
+✅ Baixe apenas o arquivo "build_exe.py"
+✅ Salve em qualquer pasta (ex: Desktop)
+
+PASSO 2: EXECUTAR O INSTALADOR
+✅ Clique duplo no arquivo "build_exe.py"
+   OU
+✅ Abra o Prompt de Comando e digite:
+   python build_exe.py
+
+PASSO 3: AGUARDAR
+✅ O instalador vai automaticamente:
+   - Baixar Python se necessário
+   - Instalar todas as dependências
+   - Criar o executável final
+   - Criar pasta pronta para usar
+
+PASSO 4: USAR O OTIMIZADOR
+✅ Na pasta "WindowsOptimizer_Complete":
+   - Execute "run_optimizer.bat" 
+   - Escolha opção 2 (Como Administrador)
+   - Use o menu para otimizar seu Windows
+
+===============================================
+
+🎯 RESUMO RÁPIDO:
+1. Baixe: build_exe.py
+2. Execute: build_exe.py  
+3. Use: WindowsOptimizer_Complete/run_optimizer.bat
+
+⚠️ IMPORTANTE:
+- SEMPRE execute como Administrador
+- Feche outros programas antes de usar
+- Reinicie o PC após otimização completa
+
+💡 DÚVIDAS?
+- O build_exe.py instala TUDO automaticamente
+- Não precisa instalar Python manualmente
+- Não precisa baixar outros arquivos
+- Funciona offline após a primeira execução
+
+===============================================
