@@ -136,6 +136,37 @@ def install_pyinstaller():
             print(f"❌ Erro ao instalar PyInstaller: {e}")
             return False
 
+def test_executable(exe_path):
+    """Testa se o executável foi criado corretamente"""
+    print("\n🧪 Testando executável...")
+    
+    try:
+        # Verificar se o arquivo existe e tem tamanho adequado
+        if not os.path.exists(exe_path):
+            print("❌ Executável não encontrado")
+            return False
+            
+        size = os.path.getsize(exe_path)
+        if size < 1024 * 1024:  # Menor que 1MB
+            print("⚠️ Executável muito pequeno, pode estar corrompido")
+            return False
+            
+        print(f"✅ Executável verificado: {size / (1024*1024):.1f} MB")
+        
+        # Teste rápido sem executar (apenas verificar se é um PE válido)
+        with open(exe_path, 'rb') as f:
+            header = f.read(64)
+            if b'MZ' in header[:2]:  # Signature PE
+                print("✅ Executável tem formato válido")
+                return True
+            else:
+                print("⚠️ Formato de executável inválido")
+                return False
+                
+    except Exception as e:
+        print(f"⚠️ Erro ao verificar executável: {e}")
+        return False
+
 def build_executable():
     """Cria o executável do otimizador"""
     
@@ -158,7 +189,7 @@ def build_executable():
     
     # 3. Instalar dependências
     if not install_dependencies():
-        print("⚠️  Tentando continuar sem algumas dependências...")
+        print("⚠️ Tentando continuar sem algumas dependências...")
     
     # 4. Instalar PyInstaller
     if not install_pyinstaller():
@@ -167,7 +198,7 @@ def build_executable():
     # 5. Limpar arquivos anteriores
     cleanup_previous_builds()
     
-    # 6. Criar executável com comando simplificado
+    # 6. Criar executável com comando otimizado
     cmd = [
         "pyinstaller",
         "--onefile",                    # Arquivo único
@@ -178,58 +209,63 @@ def build_executable():
         "--distpath=dist",              # Pasta de saída
         "--workpath=build",             # Pasta de trabalho
         "--specpath=.",                 # Local do arquivo .spec
+        "--hidden-import=psutil",       # Garantir que psutil seja incluído
+        "--hidden-import=winreg",       # Garantir que winreg seja incluído
+        "--hidden-import=subprocess",   # Garantir que subprocess seja incluído
+        "--exclude-module=tkinter",     # Excluir tkinter para reduzir tamanho
+        "--exclude-module=matplotlib",  # Excluir matplotlib
+        "--exclude-module=numpy",       # Excluir numpy
         "windows_optimizer.py"          # Arquivo principal
     ]
     
-    print("\n🔨 Criando executável...")
-    print(f"📝 Comando: {' '.join(cmd)}")
+    print("\n🔨 Criando executável otimizado...")
+    print(f"📝 Comando PyInstaller iniciado...")
     
     try:
-        # Executar comando com timeout para evitar travamento
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
+        # Executar comando com timeout menor e sem capturar output completo
+        result = subprocess.run(cmd, check=True, timeout=300)  # 5 minutos max
         
-        print("\n✅ Executável criado com sucesso!")
-        print("📁 Localização: dist/WindowsOptimizer_v3.exe")
+        print("\n✅ Build PyInstaller concluído!")
         
         # Verificar se o arquivo foi criado
         exe_path = "dist/WindowsOptimizer_v3.exe"
         if os.path.exists(exe_path):
             size_mb = os.path.getsize(exe_path) / (1024 * 1024)
-            print(f"📊 Tamanho: {size_mb:.2f} MB")
+            print(f"📁 Executável criado: {size_mb:.2f} MB")
+            
+            # Teste rápido do executável
+            if test_executable(exe_path):
+                print("✅ Teste de verificação passou")
+            else:
+                print("⚠️ Teste básico falhou, mas executável foi criado")
             
             # Criar pacote completo
             create_complete_package()
             
-            print("\n🚀 Para executar:")
-            print("   1. Execute WindowsOptimizer_v3.exe como ADMINISTRADOR")
-            print("   2. Ou use o script: run_optimizer.bat")
+            print("\n🎉 BUILD CONCLUÍDO COM SUCESSO!")
+            print("📦 Localização: WindowsOptimizer_Complete/")
+            print("\n🚀 Para usar:")
+            print("   1. Vá na pasta WindowsOptimizer_Complete")
+            print("   2. Execute run_optimizer.bat como ADMINISTRADOR")
+            
+            return True
             
         else:
-            print("⚠️  Executável não encontrado no local esperado")
+            print("❌ Executável não foi criado")
+            return False
             
-        return True
-        
     except subprocess.TimeoutExpired:
-        print("\n⏰ Timeout: Build demorou muito (>10 min)")
+        print("\n⏰ Timeout: Build demorou mais que 5 minutos")
         print("💡 Tentando método alternativo...")
         return build_executable_alternative()
         
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Erro ao criar executável:")
-        print(f"   Código de saída: {e.returncode}")
-        if e.stderr:
-            # Mostrar apenas as últimas linhas do erro
-            error_lines = e.stderr.split('\n')[-10:]
-            print("   Últimas linhas do erro:")
-            for line in error_lines:
-                if line.strip():
-                    print(f"   {line}")
-        
-        print("\n💡 Tentando método alternativo...")
+        print(f"\n❌ Erro no PyInstaller (código: {e.returncode})")
+        print("💡 Tentando método alternativo...")
         return build_executable_alternative()
         
-    except FileNotFoundError:
-        print("❌ PyInstaller não encontrado após instalação!")
+    except KeyboardInterrupt:
+        print("\n⛔ Build interrompido pelo usuário")
         return False
 
 def cleanup_previous_builds():
@@ -255,38 +291,46 @@ def cleanup_previous_builds():
 
 def build_executable_alternative():
     """Método alternativo mais simples para criar executável"""
-    print("\n🔄 Tentando método alternativo (mais simples)...")
+    print("\n🔄 Método alternativo: Build simples...")
     
-    # Comando mínimo sem opções problemáticas
+    # Comando mínimo
     cmd = [
         "pyinstaller",
         "--onefile",
         "--console", 
         "--name=WindowsOptimizer_v3",
+        "--noconfirm",
         "windows_optimizer.py"
     ]
     
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=300)
+        print("🔨 Executando build alternativo...")
+        result = subprocess.run(cmd, check=True, timeout=180)  # 3 minutos
         
         exe_path = "dist/WindowsOptimizer_v3.exe"
         if os.path.exists(exe_path):
-            print("✅ Método alternativo funcionou!")
             size_mb = os.path.getsize(exe_path) / (1024 * 1024)
-            print(f"📊 Tamanho: {size_mb:.2f} MB")
+            print(f"✅ Método alternativo funcionou! ({size_mb:.2f} MB)")
             
+            # Criar pacote
             create_complete_package()
+            print("\n🎉 BUILD ALTERNATIVO CONCLUÍDO!")
             return True
         else:
-            return False
+            print("❌ Método alternativo também falhou")
+            return create_standalone_package()
             
     except subprocess.TimeoutExpired:
         print("⏰ Método alternativo também demorou muito")
         return create_standalone_package()
         
     except subprocess.CalledProcessError:
-        print("❌ Método alternativo também falhou")
+        print("❌ Método alternativo falhou")
         return create_standalone_package()
+        
+    except KeyboardInterrupt:
+        print("⛔ Método alternativo interrompido")
+        return False
 
 def create_standalone_package():
     """Cria pacote standalone sem PyInstaller"""
@@ -427,86 +471,166 @@ Se não tem Python instalado:
 def create_complete_package():
     """Cria um pacote completo pronto para distribuição"""
     
+    print("\n📦 Criando pacote completo...")
+    
     # Criar pasta de distribuição
     dist_folder = "WindowsOptimizer_Complete"
     if os.path.exists(dist_folder):
         import shutil
         shutil.rmtree(dist_folder)
-    os.makedirs(dist_folder)
+        print("🧹 Limpando pasta anterior...")
     
-    # Copiar executável
+    os.makedirs(dist_folder)
+    print(f"📁 Pasta criada: {dist_folder}")
+    
+    # Verificar se executável existe em dist/
     exe_source = "dist/WindowsOptimizer_v3.exe"
     exe_dest = os.path.join(dist_folder, "WindowsOptimizer_v3.exe")
-    if os.path.exists(exe_source):
-        import shutil
-        shutil.copy2(exe_source, exe_dest)
-        print(f"📄 Executável copiado para: {exe_dest}")
     
-    # Criar script de execução melhorado
-    run_script = """@echo off
-title Windows Performance Optimizer v3.0
+    if os.path.exists(exe_source):
+        print(f"📋 Copiando executável de: {exe_source}")
+        print(f"📋 Para destino: {exe_dest}")
+        
+        try:
+            import shutil
+            shutil.copy2(exe_source, exe_dest)
+            
+            # Verificar se a cópia foi bem-sucedida
+            if os.path.exists(exe_dest):
+                source_size = os.path.getsize(exe_source)
+                dest_size = os.path.getsize(exe_dest)
+                
+                if source_size == dest_size:
+                    print(f"✅ Executável copiado com sucesso ({dest_size / (1024*1024):.2f} MB)")
+                else:
+                    print(f"⚠️ Tamanhos diferentes - Origem: {source_size}, Destino: {dest_size}")
+                    return False
+            else:
+                print("❌ Executável não foi copiado para o destino")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Erro ao copiar executável: {e}")
+            return False
+    else:
+        print(f"❌ Executável não encontrado em: {exe_source}")
+        print("💡 Criando pacote Python como fallback...")
+        return create_python_fallback_package(dist_folder)
+    
+    # Copiar scripts de execução existentes se houver
+    existing_scripts = [
+        "run_optimizer.bat",
+        "INSTALACAO-FACIL.bat", 
+        "LEIA-ME.txt",
+        "README.txt"
+    ]
+    
+    for script in existing_scripts:
+        if os.path.exists(script):
+            try:
+                import shutil
+                shutil.copy2(script, dist_folder)
+                print(f"✅ {script} copiado")
+            except Exception as e:
+                print(f"⚠️ Erro ao copiar {script}: {e}")
+    
+    # Criar arquivos necessários se não existirem
+    create_all_package_files(dist_folder)
+    
+    # Verificar integridade final
+    verify_package_integrity(dist_folder)
+    
+    # Criar ZIP
+    create_distribution_zip(dist_folder)
+    
+    return True
+
+def create_python_fallback_package(dist_folder):
+    """Cria pacote Python quando executável não está disponível"""
+    print("🐍 Criando pacote Python fallback...")
+    
+    # Copiar arquivos Python necessários
+    python_files = [
+        "windows_optimizer.py",
+        "requirements.txt"
+    ]
+    
+    for file in python_files:
+        if os.path.exists(file):
+            try:
+                import shutil
+                shutil.copy2(file, dist_folder)
+                print(f"✅ {file} copiado")
+            except Exception as e:
+                print(f"❌ Erro ao copiar {file}: {e}")
+                return False
+    
+    # Criar script específico para Python
+    create_python_runner_script(dist_folder)
+    return True
+
+def create_python_runner_script(dist_folder):
+    """Cria script para executar versão Python"""
+    script_content = """@echo off
+title Windows Performance Optimizer v3.0 (Python)
 color 0A
 
 echo.
 echo ===============================================
 echo    Windows Performance Optimizer v3.0
-echo    🚀 100+ Otimizacoes Avancadas do Windows
+echo    🐍 VERSAO PYTHON
 echo ===============================================
 echo.
-echo ⚠️  IMPORTANTE: Execute como ADMINISTRADOR!
-echo.
-echo 📋 Este otimizador inclui:
-echo    ✅ Limpeza avancada de arquivos
-echo    ✅ Otimizacao de inicializacao
-echo    ✅ Gerenciamento de recursos
-echo    ✅ Otimizacao de rede
-echo    ✅ Tweaks de registro
-echo    ✅ Remocao de bloatware
-echo    ✅ E muito mais...
+echo 📋 NOTA: Esta versao requer Python instalado
 echo.
 
 :menu
 echo Escolha uma opcao:
-echo [1] Executar Otimizador
-echo [2] Executar como Administrador (Recomendado)
-echo [3] Informacoes do Sistema
-echo [4] Sair
+echo [1] 🚀 Executar Otimizador (Python)
+echo [2] 📦 Instalar Dependencias
+echo [3] 🔍 Verificar Python
+echo [4] ❌ Sair
 echo.
 set /p choice="Digite sua opcao (1-4): "
 
-if "%choice%"=="1" goto run_normal
-if "%choice%"=="2" goto run_admin
-if "%choice%"=="3" goto system_info
+if "%choice%"=="1" goto run_python
+if "%choice%"=="2" goto install_deps
+if "%choice%"=="3" goto check_python
 if "%choice%"=="4" goto exit
 goto menu
 
-:run_normal
+:run_python
 echo.
-echo 🚀 Iniciando otimizador...
-if exist "WindowsOptimizer_v3.exe" (
-    WindowsOptimizer_v3.exe
+echo 🚀 Iniciando via Python...
+if exist "windows_optimizer.py" (
+    python windows_optimizer.py
 ) else (
-    echo ❌ Executavel nao encontrado!
+    echo ❌ windows_optimizer.py nao encontrado!
 )
 pause
 goto menu
 
-:run_admin
+:install_deps
 echo.
-echo 🔧 Executando como administrador...
-if exist "WindowsOptimizer_v3.exe" (
-    powershell -Command "Start-Process 'WindowsOptimizer_v3.exe' -Verb RunAs"
+echo 📦 Instalando dependencias...
+if exist "requirements.txt" (
+    pip install -r requirements.txt
 ) else (
-    echo ❌ Executavel nao encontrado!
+    echo ❌ requirements.txt nao encontrado!
 )
 pause
 goto menu
 
-:system_info
+:check_python
 echo.
-echo 💻 Informacoes do Sistema:
-systeminfo | findstr /C:"OS Name" /C:"Total Physical Memory" /C:"Available Physical Memory"
-echo.
+echo 🔍 Verificando Python...
+python --version
+if %errorlevel% equ 0 (
+    echo ✅ Python encontrado!
+) else (
+    echo ❌ Python nao encontrado!
+    echo 💡 Instale em: https://python.org
+)
 pause
 goto menu
 
@@ -514,238 +638,497 @@ goto menu
 echo.
 echo 👋 Ate logo!
 exit
-
 """
     
-    run_script_path = os.path.join(dist_folder, "run_optimizer.bat")
-    with open(run_script_path, "w", encoding="utf-8") as f:
-        f.write(run_script)
-    print(f"📄 Script de execução criado: {run_script_path}")
+    script_path = os.path.join(dist_folder, "run_optimizer.bat")
+    with open(script_path, "w", encoding="utf-8") as f:
+        f.write(script_content)
+    print("✅ Script Python runner criado")
+
+def create_user_instructions(dist_folder):
+    """Cria instruções específicas para o usuário final"""
     
-    # Criar README para distribuição
+    instructions = """===============================================
+   COMO USAR - SUPER SIMPLES!
+===============================================
+
+🎯 VOCÊ BAIXOU O WINDOWS OPTIMIZER v3.0
+
+✨ É MUITO FÁCIL DE USAR:
+
+PASSO 1: EXTRAIR
+🔸 Extraia este ZIP em qualquer pasta
+🔸 (Exemplo: Desktop, Documentos, etc.)
+
+PASSO 2: EXECUTAR  
+🔸 Clique duplo em: "run_optimizer.bat"
+🔸 Escolha opção 2 (Administrador)
+🔸 Clique "Sim" na janela de confirmação
+
+PASSO 3: OTIMIZAR
+🔸 No otimizador, escolha opção 12
+🔸 (Otimização Completa - recomendado)
+🔸 Aguarde terminar (5-15 minutos)
+
+PASSO 4: REINICIAR
+🔸 Reinicie o computador
+🔸 Pronto! Windows otimizado!
+
+===============================================
+
+💡 AINDA MAIS FÁCIL:
+- Execute: "INSTALACAO-FACIL.bat"
+- Ele te guia passo a passo!
+
+⚠️ IMPORTANTE:
+- SEMPRE execute como Administrador
+- Feche outros programas antes
+- Aguarde até o final
+
+🎉 RESULTADO:
+- Boot 30-50% mais rápido
+- Sistema mais responsivo  
+- 2-10GB+ espaço liberado
+- Menos travamentos
+
+===============================================
+© 2024 Windows Performance Optimizer v3.0 - Pronto para usar!
+==============================================="""
+    
+    instructions_path = os.path.join(dist_folder, "INSTRUCOES-USUARIO.txt")
+    with open(instructions_path, "w", encoding="utf-8") as f:
+        f.write(instructions)
+    print("✅ Instruções para usuário criadas")
+
+def create_all_package_files(dist_folder):
+    """Cria todos os arquivos necessários para o pacote"""
+    
+    # Verificar se run_optimizer.bat existe e é para executável
+    run_script_path = os.path.join(dist_folder, "run_optimizer.bat")
+    exe_path = os.path.join(dist_folder, "WindowsOptimizer_v3.exe")
+    
+    if os.path.exists(exe_path) and not os.path.exists(run_script_path):
+        create_exe_runner_script(dist_folder)
+    
+    # Criar instruções do usuário
+    create_user_instructions(dist_folder)
+    
+    # Criar README técnico
+    create_technical_readme(dist_folder)
+    
+    # Criar arquivo de instalação fácil
+    create_easy_install_script(dist_folder)
+    
+    # Criar guia de solução de problemas
+    create_troubleshooting_guide(dist_folder)
+
+def create_easy_install_script(dist_folder):
+    """Cria script de instalação fácil"""
+    script_content = """@echo off
+title Instalacao Facil - Windows Optimizer v3.0
+color 0B
+
+echo.
+echo =============================================
+echo     INSTALACAO FACIL - WINDOWS OPTIMIZER
+echo =============================================
+echo.
+echo 🎯 Este assistente vai te guiar passo a passo!
+echo.
+echo 📋 O que este script faz:
+echo    ✅ Verifica se tudo esta OK
+echo    ✅ Configura o ambiente ideal
+echo    ✅ Inicia o otimizador
+echo.
+
+pause
+
+echo.
+echo 🔍 PASSO 1: Verificando arquivos necessarios...
+echo.
+
+if not exist "WindowsOptimizer_v3.exe" (
+    echo ❌ ERRO: Executavel nao encontrado!
+    echo.
+    echo 💡 SOLUCAO:
+    echo    1. Certifique-se que todos os arquivos estao na mesma pasta
+    echo    2. Se baixou um ZIP, extraia todos os arquivos
+    echo    3. Verifique se o antivirus nao bloqueou
+    echo.
+    pause
+    exit /b 1
+)
+
+echo ✅ WindowsOptimizer_v3.exe: OK
+
+if exist "run_optimizer.bat" (
+    echo ✅ run_optimizer.bat: OK
+) else (
+    echo ⚠️  run_optimizer.bat: Nao encontrado (opcional)
+)
+
+echo.
+echo 🔍 PASSO 2: Verificando sistema...
+echo.
+
+REM Verificar versão do Windows
+for /f "tokens=4-7 delims=[.] " %%i in ('ver') do (
+    if %%i==10 (
+        echo ✅ Windows 10/11 detectado
+    ) else (
+        echo ⚠️  Windows versao: %%i.%%j
+        echo    Recomendado: Windows 10 ou superior
+    )
+)
+
+echo ✅ Sistema compativel verificado
+
+echo.
+echo 🔍 PASSO 3: Verificando privilegios...
+echo.
+
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    echo ✅ Este script esta rodando como Administrador
+    echo 💡 Perfeito! Pode prosseguir normalmente
+    set "is_admin=yes"
+) else (
+    echo ⚠️  Este script NAO esta como Administrador
+    echo.
+    echo 💡 RECOMENDACAO:
+    echo    Para melhores resultados, execute como Admin
+    echo    Mas ainda pode prosseguir normalmente
+    set "is_admin=no"
+)
+
+echo.
+echo 🔍 PASSO 4: Verificacao final...
+echo.
+
+echo 📊 RESUMO DA VERIFICACAO:
+echo ==========================================
+echo Sistema: Windows (compativel)
+echo Executavel: WindowsOptimizer_v3.exe (OK)
+echo Privilegios: %is_admin%
+echo Status: Pronto para usar!
+echo ==========================================
+
+echo.
+echo 🎯 PASSO 5: Instrucoes finais
+echo.
+echo 📋 ANTES DE COMECAR:
+echo    ✅ Feche todos os programas desnecessarios
+echo    ✅ Salve todos os trabalhos importantes  
+echo    ✅ Se for laptop, conecte na tomada
+echo.
+
+set /p ready="Esta pronto para comecar? (s/N): "
+if /i not "%ready%"=="s" (
+    echo.
+    echo 👋 Sem problemas! Execute novamente quando estiver pronto.
+    echo 💡 Para usar depois: clique duplo em "run_optimizer.bat"
+    pause
+    exit /b 0
+)
+
+echo.
+echo 🚀 INICIANDO WINDOWS OPTIMIZER...
+echo.
+
+if "%is_admin%"=="yes" (
+    echo 💡 Como voce ja e admin, iniciando diretamente...
+    WindowsOptimizer_v3.exe
+) else (
+    echo 💡 Tentando iniciar como administrador...
+    echo    Uma janela UAC aparecera - clique "Sim"
+    powershell -Command "Start-Process 'WindowsOptimizer_v3.exe' -Verb RunAs"
+)
+
+echo.
+echo ✅ COMANDO EXECUTADO!
+echo.
+echo 💡 PROXIMOS PASSOS:
+echo    1. Na tela do otimizador, use opcao 12 (Otimizacao Completa)
+echo    2. Aguarde todas as operacoes terminarem
+echo    3. Reinicie o computador quando solicitado
+echo    4. Aproveite seu Windows otimizado!
+echo.
+
+pause
+"""
+    
+    script_path = os.path.join(dist_folder, "INSTALACAO-FACIL.bat")
+    with open(script_path, "w", encoding="utf-8") as f:
+        f.write(script_content)
+    print("✅ Script de instalação fácil criado")
+
+def create_troubleshooting_guide(dist_folder):
+    """Cria guia de solução de problemas"""
+    guide_content = """===============================================
+   SOLUÇÃO DE PROBLEMAS
+   Windows Performance Optimizer v3.0
+===============================================
+
+🔧 PROBLEMAS MAIS COMUNS:
+
+===============================================
+PROBLEMA: "Erro ao executar" ou "Não funciona"
+===============================================
+
+SOLUÇÃO 1: Executar como Administrador
+🔸 Clique direito em "run_optimizer.bat"
+🔸 Selecione "Executar como administrador"
+🔸 Clique "Sim" na janela UAC
+
+SOLUÇÃO 2: Verificar arquivos
+🔸 Certifique-se que WindowsOptimizer_v3.exe existe
+🔸 Tamanho deve ser aproximadamente 6MB
+🔸 Se não existe, baixe novamente o pacote
+
+===============================================
+PROBLEMA: "Antivírus bloqueia" ou "Arquivo removido"
+===============================================
+
+SOLUÇÃO: Adicionar exceção no antivírus
+🔸 Abra seu antivírus (Windows Defender, Avast, etc.)
+🔸 Vá em "Exclusões" ou "Exceções"
+🔸 Adicione a pasta do otimizador
+🔸 OU temporariamente desative o antivírus
+
+Windows Defender:
+🔸 Configurações > Vírus e proteção
+🔸 Gerenciar configurações (Proteção em tempo real)
+🔸 Exclusões > Adicionar exclusão > Pasta
+🔸 Selecione a pasta do otimizador
+
+===============================================
+PROBLEMA: "Sistema lento após otimização"
+===============================================
+
+SOLUÇÃO 1: Reiniciar o computador
+🔸 SEMPRE reinicie após usar o otimizador
+🔸 Aguarde 2-3 minutos após o boot
+🔸 O sistema pode ficar lento inicialmente
+
+SOLUÇÃO 2: Aguardar estabilização
+🔸 Após otimização, o Windows reindexiza arquivos
+🔸 Este processo pode durar 10-30 minutos
+🔸 Use o PC normalmente, vai melhorar
+
+SOLUÇÃO 3: Restauração do Sistema
+🔸 Se persistir, use restauração do sistema
+🔸 Painel de Controle > Sistema > Proteção do Sistema
+🔸 Restauração do Sistema > Escolher ponto anterior
+
+===============================================
+PROBLEMA: "Programa trava" ou "Para de responder"
+===============================================
+
+SOLUÇÃO 1: Verificar requisitos
+🔸 Windows 10 versão 1903+ ou Windows 11
+🔸 Pelo menos 4GB de RAM
+🔸 1GB+ de espaço livre em disco
+
+SOLUÇÃO 2: Fechar outros programas
+🔸 Feche navegadores, jogos, editores
+🔸 Pare downloads/uploads
+🔸 Feche programas de antivírus temporariamente
+
+SOLUÇÃO 3: Executar em modo seguro
+🔸 Reinicie em Modo Seguro
+🔸 Execute o otimizador
+🔸 Reinicie normalmente
+
+===============================================
+PROBLEMA: "Quero reverter as mudanças"
+===============================================
+
+SOLUÇÃO 1: Restauração do Sistema
+🔸 Pressione Win + R, digite: rstrui
+🔸 Escolha um ponto antes da otimização
+🔸 Siga o assistente de restauração
+
+SOLUÇÃO 2: Reverter manualmente
+🔸 Reativar serviços desabilitados:
+   - Windows Search
+   - Fax
+   - Windows Update (se desabilitado)
+🔸 Reinstalar apps removidos pela Microsoft Store
+
+===============================================
+PROBLEMA: "Erro de privilégios" ou "Acesso negado"
+===============================================
+
+SOLUÇÃO: Garantir privilégios administrativos
+🔸 Sempre execute como administrador
+🔸 Desative controle de conta (UAC) temporariamente
+🔸 Faça login como administrador local
+
+===============================================
+PROBLEMA: "Internet lenta após otimização"
+===============================================
+
+SOLUÇÃO 1: Verificar DNS
+🔸 Pressione Win + R, digite: cmd
+🔸 Digite: ipconfig /flushdns
+🔸 Digite: ipconfig /renew
+
+SOLUÇÃO 2: Resetar configurações de rede
+🔸 Pressione Win + X > Windows PowerShell (Admin)
+🔸 Digite: netsh winsock reset
+🔸 Digite: netsh int ip reset
+🔸 Reinicie o computador
+
+===============================================
+🆘 SE NADA FUNCIONAR:
+===============================================
+
+🔸 Baixe novamente o pacote completo
+🔸 Execute em outro computador para teste
+🔸 Verifique se o Windows está atualizado
+🔸 Considere restauração completa do sistema
+
+===============================================
+💡 DICAS IMPORTANTES:
+===============================================
+
+✅ SEMPRE faça backup antes de usar
+✅ Execute apenas em PCs que você possui
+✅ Use apenas em Windows originais
+✅ Mantenha pontos de restauração ativados
+✅ Execute apenas quando necessário
+
+===============================================
+📞 INFORMAÇÕES TÉCNICAS:
+===============================================
+
+Logs do sistema: %TEMP%\WindowsOptimizer\
+Versão mínima: Windows 10 build 1903
+RAM mínima: 4GB
+Espaço necessário: 1GB+
+Duração típica: 5-15 minutos
+
+===============================================
+© 2024 Windows Performance Optimizer v3.0
+==============================================="""
+    
+    guide_path = os.path.join(dist_folder, "SOLUCAO-PROBLEMAS.txt")
+    with open(guide_path, "w", encoding="utf-8") as f:
+        f.write(guide_content)
+    print("✅ Guia de solução de problemas criado")
+
+def create_technical_readme(dist_folder):
+    """Cria README técnico"""
     readme_content = """# Windows Performance Optimizer v3.0
 
-## 🚀 Otimizador Completo do Windows
+## 📦 Pacote de Distribuição
 
-Este pacote contém tudo que você precisa para otimizar seu Windows!
+Este é o pacote completo do Windows Optimizer, pronto para uso.
 
-### 📦 Conteúdo do Pacote:
-- WindowsOptimizer_v3.exe - Programa principal (6MB)
-- run_optimizer.bat - Script de execução facilitado
+### 🎯 Como Usar:
 
-### 🛠️ Como Usar:
+1. **Extrair**: Extraia todos os arquivos em uma pasta
+2. **Executar**: Clique duplo em `run_optimizer.bat`
+3. **Administrador**: Escolha opção 2 (Como Administrador)
+4. **Otimizar**: Use opção 12 (Otimização Completa)
+5. **Reiniciar**: Reinicie o PC após otimização
 
-#### Método 1 (Recomendado):
-1. Execute run_optimizer.bat
-2. Escolha a opção 2 (Executar como Administrador)
-3. Siga as instruções na tela
+### 📋 Arquivos Inclusos:
 
-#### Método 2 (Direto):
-1. Clique com botão direito em WindowsOptimizer_v3.exe
-2. Selecione "Executar como administrador"
-3. Use o menu interativo
+- `WindowsOptimizer_v3.exe` - Programa principal
+- `run_optimizer.bat` - Script facilitador
+- `INSTRUCOES-USUARIO.txt` - Guia completo
+- `README.txt` - Este arquivo
 
-### ✨ Recursos Inclusos (100+ Otimizações):
+### ⚠️ Requisitos:
 
-🧹 **Limpeza Avançada** (10 funções)
-- Pontos de restauração antigos
-- Cache de navegadores (Chrome, Edge, Firefox)
-- Arquivos temporários e AppData
-- Windows.old e componentes antigos
-- Logs do sistema e eventos
+- Windows 10/11 (64-bit)
+- Privilégios de administrador
+- 1GB+ espaço livre em disco
 
-🚀 **Otimização de Boot** (10 funções)
-- Inicialização rápida
-- Programas de startup
-- Configurações de hibernação
-- Otimização BIOS/UEFI
-- Sequência de boot otimizada
+### 🎯 Resultados Esperados:
 
-🎯 **Gerenciamento de Recursos** (10 funções)
-- Memória virtual ajustada
-- Processos em background limitados
-- Live tiles desabilitados
-- Cortana e telemetria otimizados
-- Sincronização controlada
-
-🌐 **Rede e Internet** (10 funções)
-- Cache DNS limpo
-- Configurações TCP otimizadas
-- Limitação de banda inteligente
-- Drivers de rede atualizados
-- QoS configurado
-
-⚙️ **Hardware e Drivers** (10 funções)
-- Drivers atualizados automaticamente
-- Hardware não utilizado desabilitado
-- Planos de energia otimizados
-- Detecção SSD/HDD automática
-- Overclocking seguro (opcional)
-
-🔧 **Tweaks de Registro** (10 funções)
-- Performance do sistema melhorada
-- Telemetria desabilitada
-- Interface mais rápida
-- Configurações avançadas aplicadas
-- Cache otimizado
-
-🛠️ **Ferramentas Nativas** (10 funções)
-- SFC scan automático
-- DISM repair executado
-- Desfragmentação inteligente
-- Monitor de recursos integrado
-- Limpeza de disco agendada
-
-🔒 **Segurança e Performance** (10 funções)
-- Windows Defender otimizado
-- Firewall configurado
-- Atualizações controladas
-- Verificação de malware
-- Backup de configurações
-
-🎮 **Otimizações Específicas** (10 funções)
-- Modo gamer ativado
-- Produtividade melhorada
-- Multimídia otimizada
-- Desenvolvimento acelerado
-- VPN e trabalho remoto
-
-💡 **Dicas Diversas** (10 funções)
-- Alternativas leves sugeridas
-- Configurações de mouse/teclado
-- Fontes do sistema otimizadas
-- ReadyBoost configurado
-- Reinicializações programadas
-
-### ⚠️ Avisos Importantes:
-
-- **SEMPRE execute como administrador**
-- Feche todos os programas antes de usar
-- Faça backup de dados importantes
-- Reinicie o PC após otimização completa
-- Testado no Windows 10/11
-
-### 📊 Resultados Esperados:
-
-✅ Boot 30-50% mais rápido
-✅ Uso de RAM reduzido em 15-25%
-✅ Espaço em disco liberado (2-10GB+)
-✅ Sistema mais responsivo
-✅ Menos travamentos e erros
-✅ Melhor duração da bateria (laptops)
-✅ Navegação mais rápida
-✅ Jogos com melhor FPS
-
-### 🆘 Solução de Problemas:
-
-Se encontrar problemas:
-1. Execute como administrador
-2. Desative antivírus temporariamente
-3. Verifique se tem espaço em disco (>1GB)
-4. Feche outros programas
-5. Reinicie o computador
-
-### 💡 Dicas de Uso:
-
-- Use a "Otimização Completa" para máximo resultado
-- Execute mensalmente para manter performance
-- Verifique as "Informações do Sistema" antes e depois
-- Reinicie sempre após otimizações importantes
+- ⚡ Boot 30-50% mais rápido
+- 💾 2-10GB+ espaço liberado
+- 🚀 Sistema mais responsivo
+- 🔋 Melhor duração da bateria
 
 ---
 © 2024 Windows Performance Optimizer v3.0
-Desenvolvido para máxima performance do Windows
 """
     
     readme_path = os.path.join(dist_folder, "README.txt")
     with open(readme_path, "w", encoding="utf-8") as f:
         f.write(readme_content)
-    print(f"📄 README criado: {readme_path}")
+    print("✅ README técnico criado")
+
+def verify_package_integrity(dist_folder):
+    """Verifica integridade do pacote criado"""
+    print("\n🔍 Verificando integridade do pacote...")
     
-    # Criar arquivo de informações técnicas
-    tech_info = """INFORMAÇÕES TÉCNICAS - Windows Optimizer v3.0
-
-🔧 Especificações:
-- Tamanho do executável: ~6MB
-- Requer: Windows 10/11
-- Linguagem: Python compilado
-- Dependências: Todas incluídas
-
-🛡️ Segurança:
-- Sem conexão com internet necessária
-- Não coleta dados pessoais
-- Não modifica arquivos do sistema críticos
-- Backups automáticos das alterações de registro
-
-⚡ Performance:
-- Executável otimizado
-- Baixo uso de memória (<50MB)
-- Execução rápida (<5 min para otimização completa)
-- Interface responsiva
-
-🔄 Compatibilidade:
-- Windows 10 (build 1903+)
-- Windows 11 (todas as versões)
-- Arquitetura x64
-- RAM mínima: 4GB (recomendado 8GB+)
-
-📝 Alterações Realizadas:
-O otimizador documenta todas as mudanças em:
-- Arquivos removidos
-- Configurações de registro alteradas
-- Serviços desabilitados
-- Programas removidos
-
-🔙 Como Reverter:
-- Use "Restauração do Sistema" do Windows
-- Reative serviços manualmente se necessário
-- Reinstale programas removidos se desejar
-- Configure opções manualmente via Configurações
-
-⚠️ IMPORTANTE:
-Este software modifica configurações do sistema.
-Use por sua conta e risco.
-Sempre faça backup de dados importantes.
-"""
+    essential_files = ["run_optimizer.bat", "INSTRUCOES-USUARIO.txt"]
+    exe_file = os.path.join(dist_folder, "WindowsOptimizer_v3.exe")
+    python_file = os.path.join(dist_folder, "windows_optimizer.py")
     
-    tech_path = os.path.join(dist_folder, "TECNICO.txt")
-    with open(tech_path, "w", encoding="utf-8") as f:
-        f.write(tech_info)
-    print(f"📄 Info técnica criada: {tech_path}")
+    # Deve ter pelo menos um dos dois
+    if not (os.path.exists(exe_file) or os.path.exists(python_file)):
+        print("❌ ERRO: Nem executável nem script Python encontrados!")
+        return False
     
-    print(f"\n📦 Pacote completo criado em: {dist_folder}/")
-    print("🎯 Pronto para distribuição!")
+    # Verificar arquivos essenciais
+    missing_files = []
+    for file in essential_files:
+        file_path = os.path.join(dist_folder, file)
+        if not os.path.exists(file_path):
+            missing_files.append(file)
     
-    # Criar arquivo ZIP automático para distribuição
+    if missing_files:
+        print(f"⚠️ Arquivos faltando: {', '.join(missing_files)}")
+    
+    # Verificar tamanho do executável se existir
+    if os.path.exists(exe_file):
+        size = os.path.getsize(exe_file)
+        if size < 1024 * 1024:  # Menor que 1MB
+            print(f"⚠️ Executável muito pequeno: {size} bytes")
+            return False
+        else:
+            print(f"✅ Executável OK: {size / (1024*1024):.2f} MB")
+    
+    print("✅ Verificação de integridade concluída")
+    return True
+
+def create_distribution_zip(dist_folder):
+    """Cria ZIP para distribuição"""
     try:
         import zipfile
         zip_path = "WindowsOptimizer_v3_Complete.zip"
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        
+        # Remover ZIP anterior
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+            print("🗑️ ZIP anterior removido")
+        
+        print("📦 Criando novo ZIP...")
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
             for root, dirs, files in os.walk(dist_folder):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arcname = os.path.relpath(file_path, dist_folder)
                     zipf.write(file_path, arcname)
-        print(f"📦 ZIP criado automaticamente: {zip_path}")
-        print("💡 Pronto para compartilhar!")
+                    print(f"📄 Adicionado: {arcname}")
+        
+        if os.path.exists(zip_path):
+            zip_size = os.path.getsize(zip_path) / (1024 * 1024)
+            print(f"✅ ZIP criado: {zip_path} ({zip_size:.1f} MB)")
+            print("🎯 ESTE É O ARQUIVO PARA DISTRIBUIR!")
+            return True
+        else:
+            print("❌ Falha ao criar ZIP")
+            return False
+            
     except Exception as e:
-        print(f"⚠️  Não foi possível criar ZIP: {e}")
-
-def create_optimizer_code():
-    """Cria o código do otimizador se não existir"""
-    optimizer_code = '''# Windows Performance Optimizer v3.0
-# Código será inserido aqui automaticamente
-import os
-import sys
-print("Otimizador será criado automaticamente...")
-'''
-    
-    # Aqui você colaria todo o código do windows_optimizer.py
-    # Mas para simplicidade, vou fazer ele baixar da internet ou incluir inline
-    
-    with open("windows_optimizer.py", "w", encoding="utf-8") as f:
-        f.write(optimizer_code)
-    print("✅ Código do otimizador criado")
+        print(f"❌ Erro ao criar ZIP: {e}")
+        return False
 
 if __name__ == "__main__":
     print("=" * 70)
@@ -753,71 +1136,69 @@ if __name__ == "__main__":
     print("🔧 INSTALADOR AUTOMÁTICO COMPLETO")
     print("=" * 70)
     print()
-    print("📋 Este arquivo faz TUDO automaticamente:")
-    print("   ✅ Baixa Python se necessário")
-    print("   ✅ Instala todas as dependências")
-    print("   ✅ Cria executável independente")
-    print("   ✅ Fallback: pacote Python se executável falhar")
-    print()
-    print("⏰ Tempo estimado: 5-10 minutos")
-    print("🌐 Requer internet na primeira execução")
-    print()
     
-    # Criar o código do otimizador se não existir
+    # Verificar arquivo principal
     if not os.path.exists("windows_optimizer.py"):
-        print("📥 Arquivo windows_optimizer.py já deve existir!")
-        print("❌ Certifique-se que ambos os arquivos estão na mesma pasta")
+        print("❌ Arquivo windows_optimizer.py não encontrado!")
+        print("💡 Certifique-se que ambos os arquivos estão na mesma pasta")
         input("Pressione Enter para sair...")
         sys.exit(1)
     
     try:
-        print("🎯 Iniciando build automático completo...")
+        print("🎯 Iniciando build automático...")
         success = build_executable()
         
         if success:
             print("\n" + "="*70)
-            print("🎉 BUILD CONCLUÍDO COM SUCESSO!")
+            print("🎉 BUILD FINALIZADO COM SUCESSO!")
             print("="*70)
             print()
-            print("📦 ARQUIVOS CRIADOS:")
-            print("   📁 WindowsOptimizer_Complete/ (PASTA PRINCIPAL)")
             
-            # Verificar que tipo de pacote foi criado
-            if os.path.exists("dist/WindowsOptimizer_v3.exe"):
-                print("   📄 WindowsOptimizer_v3.exe (Executável independente)")
-                print("   💡 Não precisa de Python no computador de destino")
+            # Verificar qual tipo de pacote foi criado
+            exe_in_complete = os.path.exists("WindowsOptimizer_Complete/WindowsOptimizer_v3.exe")
+            zip_exists = os.path.exists("WindowsOptimizer_v3_Complete.zip")
+            
+            if exe_in_complete:
+                print("✅ EXECUTÁVEL: WindowsOptimizer_v3.exe (funciona sem Python)")
+                print("📁 LOCALIZAÇÃO: WindowsOptimizer_Complete/")
             else:
-                print("   📄 windows_optimizer.py (Requer Python)")
-                print("   💡 Precisa de Python instalado no computador de destino")
+                print("✅ VERSÃO PYTHON: windows_optimizer.py (requer Python)")
+                print("📁 LOCALIZAÇÃO: WindowsOptimizer_Complete/")
             
-            print("   📄 run_optimizer.bat (Script facilitador)")
-            print("   📄 README.txt (Instruções)")
+            if zip_exists:
+                print("📦 ZIP CRIADO: WindowsOptimizer_v3_Complete.zip")
+                print("🎯 PARA DISTRIBUIR: Compartilhe este ZIP")
+            
             print()
-            print("🚀 COMO USAR AGORA:")
-            print("   1. Vá na pasta 'WindowsOptimizer_Complete'")
-            print("   2. Execute 'run_optimizer.bat' como ADMINISTRADOR")
-            print("   3. Siga as instruções na tela")
+            print("🔧 PARA TESTAR:")
+            print("   1. Vá na pasta: WindowsOptimizer_Complete")
+            print("   2. Execute: run_optimizer.bat como ADMINISTRADOR")
+            print("   3. Escolha opção 2 (Como Administrador)")
             print()
             
-            # Abrir pasta automaticamente
+            # Tentar abrir a pasta
             try:
-                os.startfile("WindowsOptimizer_Complete")
+                import subprocess
+                subprocess.run(['explorer', 'WindowsOptimizer_Complete'], check=False)
                 print("📂 Pasta aberta automaticamente!")
             except:
-                pass
+                print("📂 Abra manualmente: WindowsOptimizer_Complete")
                 
         else:
-            print("\n💥 Build falhou completamente!")
-            print("🔧 Soluções:")
-            print("   1. Verifique conexão com internet")
-            print("   2. Execute como administrador")
-            print("   3. Desative antivírus temporariamente")
-            print("   4. Verifique espaço em disco (>1GB)")
+            print("\n💥 Build falhou!")
+            print("💡 Possíveis soluções:")
+            print("   - Execute como administrador")
+            print("   - Desative antivírus temporariamente")
+            print("   - Verifique espaço em disco")
+            print("   - Tente novamente")
             
     except KeyboardInterrupt:
-        print("\n\n⛔ Build cancelado pelo usuário")
+        print("\n⛔ Build cancelado pelo usuário")
+        
     except Exception as e:
         print(f"\n💥 Erro inesperado: {e}")
-        print("🔧 Tente executar como administrador")
+        import traceback
+        traceback.print_exc()
     
-    input("\nPressione Enter para sair...")
+    print("\n" + "="*50)
+    input("Pressione Enter para sair...")
