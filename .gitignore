@@ -1,0 +1,10 @@
+# Inicializar repositório
+git init
+
+git status
+
+git add .
+
+git commit -m "Initial commit: Windows Performance Optimizer v3.0"
+
+git status --ignored

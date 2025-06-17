@@ -700,6 +700,65 @@ PASSO 4: REINICIAR
         f.write(instructions)
     print("✅ Instruções para usuário criadas")
 
+def create_exe_runner_script(dist_folder):
+    """Cria script para executar o arquivo executável"""
+    script_content = """@echo off
+title Windows Performance Optimizer v3.0
+color 0A
+
+echo.
+echo ===============================================
+echo    Windows Performance Optimizer v3.0
+echo    🚀 100+ Otimizacoes Avancadas do Windows
+echo ===============================================
+echo.
+echo 📋 INSTRUÇÕES:
+echo.
+
+:menu
+echo Escolha uma opcao:
+echo [1] Executar Normalmente
+echo [2] Executar como Administrador (Recomendado)
+echo [3] Sair
+echo.
+set /p choice="Digite sua opcao (1-3): "
+
+if "%choice%"=="1" goto run_normal
+if "%choice%"=="2" goto run_admin
+if "%choice%"=="3" goto exit
+goto menu
+
+:run_normal
+echo.
+echo 🚀 Iniciando Windows Optimizer...
+if exist "WindowsOptimizer_v3.exe" (
+    start WindowsOptimizer_v3.exe
+) else (
+    echo ❌ Executavel nao encontrado!
+)
+exit
+
+:run_admin
+echo.
+echo 🚀 Iniciando como Administrador...
+if exist "WindowsOptimizer_v3.exe" (
+    powershell -Command "Start-Process 'WindowsOptimizer_v3.exe' -Verb RunAs"
+) else (
+    echo ❌ Executavel nao encontrado!
+)
+exit
+
+:exit
+echo.
+echo 👋 Ate logo!
+exit
+"""
+    
+    script_path = os.path.join(dist_folder, "run_optimizer.bat")
+    with open(script_path, "w", encoding="utf-8") as f:
+        f.write(script_content)
+    print("✅ Script executor do executável criado")
+
 def create_all_package_files(dist_folder):
     """Cria todos os arquivos necessários para o pacote"""
     
