@@ -977,7 +977,7 @@ class WindowsOptimizer:
         """Arquivos Temporários do Obsidian"""
         return self._clean_directory(os.path.expandvars(r'%APPDATA%\Obsidian\Cache'))
 
-    # Categoria 3: Comunicação e Colaboração (implementar 10 funções)
+    # Categoria 3: Comunicação e Colaboração
     def clean_outlook_temp(self):
         """Cache do Microsoft Outlook"""
         return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\Outlook\Temp'))
@@ -1019,7 +1019,343 @@ class WindowsOptimizer:
         """Arquivos Temporários do Zoho Cliq"""
         return self._clean_directory(os.path.expandvars(r'%APPDATA%\Zoho Cliq\Cache'))
 
-    # === FUNÇÕES AUXILIARES PARA LIMPEZA ===
+    # Categoria 4: Jogos e Plataformas
+    def clean_riot_cache(self):
+        """Cache do Riot Games Client"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Riot Games\Riot Client\Cache'))
+    
+    def clean_ea_desktop_temp(self):
+        """Arquivos Temporários do EA Desktop"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Electronic Arts\EA Desktop\Cache'))
+    
+    def clean_bethesda_cache(self):
+        """Cache do Bethesda Launcher"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Bethesda.net Launcher\Cache'))
+    
+    def clean_steam_workshop_temp(self):
+        """Arquivos Temporários do Steam Workshop"""
+        steam_paths = [
+            r'C:\Program Files (x86)\Steam\steamapps\workshop\temp',
+            r'C:\Program Files\Steam\steamapps\workshop\temp'
+        ]
+        return self._clean_multiple_paths(steam_paths)
+    
+    def clean_itch_cache(self):
+        """Cache do Itch.io"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\itch\Cache'))
+    
+    def clean_epic_temp(self):
+        """Arquivos Temporários do Epic Games"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\EpicGamesLauncher\Saved\webcache'))
+    
+    def clean_gog_cache(self):
+        """Cache do GOG Galaxy"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\GOG.com\Galaxy\Cache'))
+    
+    def clean_psnow_temp(self):
+        """Arquivos Temporários do PlayStation Now"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Sony\PlayStation Now\Cache'))
+    
+    def clean_nvidia_geforce_cache(self):
+        """Cache do NVIDIA GeForce Experience"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\NVIDIA Corporation\GeForce Experience\Cache'))
+    
+    def clean_amd_radeon_temp(self):
+        """Arquivos Temporários do AMD Radeon"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\AMD\CN\Cache'))
+
+    # Categoria 5: Ferramentas de Desenvolvimento
+    def clean_pycharm_cache(self):
+        """Cache do PyCharm"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\JetBrains\PyCharm*\caches'))
+    
+    def clean_webstorm_temp(self):
+        """Arquivos Temporários do WebStorm"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\JetBrains\WebStorm*\caches'))
+    
+    def clean_phpstorm_cache(self):
+        """Cache do PHPStorm"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\JetBrains\PhpStorm*\caches'))
+    
+    def clean_rubymine_temp(self):
+        """Arquivos Temporários do RubyMine"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\JetBrains\RubyMine*\caches'))
+    
+    def clean_clion_cache(self):
+        """Cache do CLion"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\JetBrains\CLion*\caches'))
+    
+    def clean_netbeans_temp(self):
+        """Arquivos Temporários do NetBeans"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\NetBeans\*\var\cache'))
+    
+    def clean_anaconda_cache(self):
+        """Cache do Anaconda"""
+        paths = [
+            r'%USERPROFILE%\.conda\pkgs',
+            r'%LOCALAPPDATA%\conda\conda\pkgs'
+        ]
+        return self._clean_multiple_paths(paths)
+    
+    def clean_jupyter_temp(self):
+        """Arquivos Temporários do Jupyter"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\jupyter\runtime'))
+    
+    def clean_visualstudio_cache(self):
+        """Cache do Visual Studio"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\VisualStudio\*\ComponentModelCache'))
+    
+    def clean_github_desktop_temp(self):
+        """Arquivos Temporários do GitHub Desktop"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\GitHub Desktop\Cache'))
+
+    # Categoria 6: Ferramentas de Segurança
+    def clean_avira_cache(self):
+        """Cache do Avira Antivirus"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\Avira\Antivirus\Cache'))
+    
+    def clean_avg_temp(self):
+        """Arquivos Temporários do AVG Antivirus"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\AVG\Antivirus\temp'))
+    
+    def clean_panda_cache(self):
+        """Cache do Panda Security"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\Panda Security\Panda Security Protection\Cache'))
+    
+    def clean_comodo_temp(self):
+        """Arquivos Temporários do Comodo Antivirus"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\COMODO\Antivirus\Temp'))
+    
+    def clean_fsecure_cache(self):
+        """Cache do F-Secure"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\F-Secure\Cache'))
+    
+    def clean_zonealarm_temp(self):
+        """Arquivos Temporários do ZoneAlarm"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\CheckPoint\ZoneAlarm\Temp'))
+    
+    def clean_defender_offline(self):
+        """Cache do Windows Defender Offline"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\Microsoft\Windows Defender\Scans\History'))
+    
+    def clean_hitmanpro_temp(self):
+        """Arquivos Temporários do HitmanPro"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\HitmanPro\Temp'))
+    
+    def clean_adwcleaner_cache(self):
+        """Cache do AdwCleaner"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\AdwCleaner\Cache'))
+    
+    def clean_spybot_temp(self):
+        """Arquivos Temporários do Spybot"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\Spybot - Search & Destroy\Temp'))
+
+    # Categoria 7: Multimídia
+    def clean_itunes_cache(self):
+        """Cache do iTunes"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\Apple Computer\iTunes\Cache'))
+    
+    def clean_plex_temp(self):
+        """Arquivos Temporários do Plex Media Server"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Plex Media Server\Cache'))
+    
+    def clean_kodi_cache(self):
+        """Cache do Kodi"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\Kodi\userdata\Thumbnails'))
+    
+    def clean_moviemaker_temp(self):
+        """Arquivos Temporários do Windows Movie Maker"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\Movie Maker\Cache'))
+    
+    def clean_vegas_cache(self):
+        """Cache do Vegas Pro"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\Sony\Vegas Pro\*\Cache'))
+    
+    def clean_handbrake_temp(self):
+        """Arquivos Temporários do HandBrake"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\HandBrake\Cache'))
+    
+    def clean_lightworks_cache(self):
+        """Cache do Lightworks"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Lightworks\Cache'))
+    
+    def clean_shotcut_temp(self):
+        """Arquivos Temporários do Shotcut"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\Meltytech\Shotcut\Cache'))
+    
+    def clean_obs_logs(self):
+        """Logs do OBS Studio"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\obs-studio\logs'))
+    
+    def clean_mediamonkey_temp(self):
+        """Arquivos Temporários do MediaMonkey"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\MediaMonkey\Cache'))
+
+    # Categoria 8: Backup e Sincronização
+    def clean_googledrive_cache(self):
+        """Cache do Google Drive"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Google\Drive\Cache'))
+    
+    def clean_megasync_temp(self):
+        """Arquivos Temporários do MegaSync"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Mega Limited\MEGAsync\Cache'))
+    
+    def clean_pcloud_cache(self):
+        """Cache do pCloud"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\pCloud\Cache'))
+    
+    def clean_synccom_temp(self):
+        """Arquivos Temporários do Sync.com"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Sync\Cache'))
+    
+    def clean_boxsync_cache(self):
+        """Cache do Box Sync"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Box\Box Sync\Cache'))
+    
+    def clean_idrive_temp(self):
+        """Arquivos Temporários do IDrive"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\IDrive\Cache'))
+    
+    def clean_acronis_cache(self):
+        """Cache do Acronis True Image"""
+        return self._clean_directory(os.path.expandvars(r'%PROGRAMDATA%\Acronis\TrueImageHome\Cache'))
+    
+    def clean_backblaze_temp(self):
+        """Arquivos Temporários do Backblaze"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Backblaze\Cache'))
+    
+    def clean_carbonite_cache(self):
+        """Cache do Carbonite"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Carbonite\Cache'))
+    
+    def clean_crashplan_temp(self):
+        """Arquivos Temporários do CrashPlan"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\CrashPlan\Cache'))
+
+    # Categoria 9: Outros Aplicativos
+    def clean_evernote_webclipper(self):
+        """Cache do Evernote Web Clipper"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Evernote\Evernote\Cache'))
+    
+    def clean_trello_webclipper(self):
+        """Arquivos Temporários do Trello Web Clipper"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Trello\Cache'))
+    
+    def clean_pocket_cache(self):
+        """Cache do Pocket"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Pocket\Cache'))
+    
+    def clean_rainmeter_temp(self):
+        """Arquivos Temporários do Rainmeter"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\Rainmeter\Cache'))
+    
+    def clean_rocketdock_cache(self):
+        """Cache do RocketDock"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\RocketDock\Cache'))
+    
+    def clean_7zip_temp(self):
+        """Arquivos Temporários do 7-Zip"""
+        return self._clean_directory(os.path.expandvars(r'%TEMP%\7z*'))
+    
+    def clean_winrar_cache(self):
+        """Cache do WinRAR"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\WinRAR\Cache'))
+    
+    def clean_filezilla_temp(self):
+        """Arquivos Temporários do FileZilla"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\FileZilla\Cache'))
+    
+    def clean_putty_cache(self):
+        """Cache do PuTTY"""
+        return self._clean_directory(os.path.expandvars(r'%APPDATA%\PuTTY\Cache'))
+    
+    def clean_winscp_temp(self):
+        """Arquivos Temporários do WinSCP"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\WinSCP\Cache'))
+
+    # Categoria 10: Recursos do Windows
+    def clean_voicerecorder_cache(self):
+        """Cache do Windows Voice Recorder"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.SoundRecorder_*\LocalCache'))
+    
+    def clean_yourphone_temp(self):
+        """Arquivos Temporários do Windows Your Phone"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.YourPhone_*\LocalCache'))
+    
+    def clean_mixedreality_cache(self):
+        """Cache do Windows Mixed Reality"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.Windows.Holographic*\LocalCache'))
+    
+    def clean_cortana_local_cache(self):
+        """Cache Local da Cortana"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.Windows.Cortana_*\LocalCache'))
+    
+    def clean_clock_cache(self):
+        """Cache do Windows Clock App"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.WindowsAlarms_*\LocalCache'))
+    
+    def clean_todo_temp(self):
+        """Arquivos Temporários do Windows To Do"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.Todos_*\LocalCache'))
+    
+    def clean_paint3d_cache(self):
+        """Cache do Windows Paint 3D"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.MSPaint_*\LocalCache'))
+    
+    def clean_snipsketch_temp(self):
+        """Arquivos Temporários do Windows Snip & Sketch"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.ScreenSketch_*\LocalCache'))
+    
+    def clean_3dviewer_cache(self):
+        """Cache do Windows 3D Viewer"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.Microsoft3DViewer_*\LocalCache'))
+    
+    def clean_gamebar_temp(self):
+        """Arquivos Temporários do Windows Game Bar"""
+        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Packages\Microsoft.XboxGamingOverlay_*\LocalCache'))
+
+    def _execute_cleanup(self, description, cleanup_function):
+        """Executa uma função de limpeza e trata erros"""
+        try:
+            result = cleanup_function()
+            if result:
+                print(f"✅ {description}")
+                return True
+            else:
+                print(f"⚠️ {description} - nada para limpar")
+                return False
+        except Exception as e:
+            self.logger.error(f"Erro em {description}: {e}")
+            print(f"⚠️ {description} - erro")
+            return False
+    
+    def _clean_directory(self, path):
+        """Limpa um diretório específico"""
+        try:
+            if not os.path.exists(path):
+                return False
+            
+            cleaned = False
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    try:
+                        file_path = os.path.join(root, file)
+                        os.remove(file_path)
+                        cleaned = True
+                    except:
+                        continue
+                        
+                for dir_name in dirs:
+                    try:
+                        dir_path = os.path.join(root, dir_name)
+                        shutil.rmtree(dir_path, ignore_errors=True)
+                        cleaned = True
+                    except:
+                        continue
+            return cleaned
+        except:
+            return False
+    
     def _clean_multiple_paths(self, paths):
         """Limpa múltiplos caminhos com wildcards"""
         cleaned = False
@@ -1052,25 +1388,6 @@ class WindowsOptimizer:
             except:
                 pass
         return cleaned
-
-    # Implementar as demais funções seguindo o mesmo padrão...
-    # (Para economizar espaço, vou mostrar apenas algumas como exemplo)
-    
-    # Categoria 4: Jogos (exemplo de algumas funções)
-    def clean_riot_cache(self):
-        """Cache do Riot Games Client"""
-        return self._clean_directory(os.path.expandvars(r'%LOCALAPPDATA%\Riot Games\Riot Client\Cache'))
-    
-    def clean_steam_workshop_temp(self):
-        """Arquivos Temporários do Steam Workshop"""
-        steam_paths = [
-            r'C:\Program Files (x86)\Steam\steamapps\workshop\temp',
-            r'C:\Program Files\Steam\steamapps\workshop\temp'
-        ]
-        return self._clean_multiple_paths(steam_paths)
-
-    # Implementar todas as outras categorias seguindo o mesmo padrão...
-    # (Categoria 5-10 com 10 funções cada)
 
 if __name__ == "__main__":
     # Configurar logging PRIMEIRO
